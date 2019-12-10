@@ -6,6 +6,7 @@
 	out.print("<h1>Soy index.jsp</h1>");
 %>
 
-<a href="perros">CRUD Perros</a>
+<a href="perros">- CRUD Perros -</a>
+<a href="perros-jstl.jsp">- CRUD Perros con JSTL -</a>
 
 <%@include file="includes/footer.jsp" %>
