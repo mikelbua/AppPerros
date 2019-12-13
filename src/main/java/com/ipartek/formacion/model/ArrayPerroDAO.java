@@ -31,7 +31,7 @@ public class ArrayPerroDAO implements IDAO<Perro> {
 	@Override
 	public List<Perro> getAll() {
 
-		return null;
+		return registros;
 	}
 
 	@Override

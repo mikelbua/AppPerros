@@ -38,6 +38,7 @@ public class Perro {
 		this.nombre = nombre;
 	}
 
+	//getters setters
 
 	public int getId() {
 		return id;
