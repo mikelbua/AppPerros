@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import com.ipartek.formacion.model.ArrayPerroDAO;
 import com.ipartek.formacion.model.pojo.Perro;
 
 /**
@@ -23,9 +24,8 @@ public class PerrosController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	// Declaramos el Logger para poder recopilar informacion de errores.
 	private final static Logger LOG = Logger.getLogger(PerrosController.class);
+	private static ArrayPerroDAO dao = ArrayPerroDAO.getinstance();
 
-	private ArrayList<Perro> perros = new ArrayList<Perro>();
-	private int indice = 6;
 	private String mensaje = "";
 
 	@Override
@@ -37,18 +37,27 @@ public class PerrosController extends HttpServlet {
 		 * LOG.error("EROR"); LOG.info("INFO");
 		 */
 		LOG.trace("Se ejecuta la primera vez que se llama a este servlet y nunca mas.");
-		perros.add(new Perro(1,"beltz","https://comodibujar.club/wp-content/uploads/2019/03/dibujar-perro-kawaii-1.jpg"));
-		perros.add(new Perro(2,"toki", "https://cdn5.dibujos.net/dibujos/pintar/cachorrito-de-perro.png"));
-		perros.add(new Perro(3,"lagun", "https://www.perrosamigos.com/Uploads/perrosamigos.com/ImagenesGrandes/m-dibujos-de-perros.html-5.jpg"));
-		perros.add(new Perro(4,"txiki","https://t1.uc.ltmcdn.com/images/7/6/6/img_como_dibujar_un_perro_adorable_38667_600.jpg"));
-		perros.add(new Perro(5,"koki", "http://practicarte.com/blog/wp-content/uploads/2019/04/Aprende-C%C3%B3mo-Dibujar-Un-Perro-Comiendo-Paso-A-Paso-6.jpg"));
-	}
+		try {
+			dao.create(new Perro("beltz",
+					"https://comodibujar.club/wp-content/uploads/2019/03/dibujar-perro-kawaii-1.jpg"));
+		
+		dao.create(new Perro("toki", "https://cdn5.dibujos.net/dibujos/pintar/cachorrito-de-perro.png"));
+		dao.create(new Perro("lagun",
+				"https://www.perrosamigos.com/Uploads/perrosamigos.com/ImagenesGrandes/m-dibujos-de-perros.html-5.jpg"));
+		dao.create(new Perro("txiki",
+				"https://t1.uc.ltmcdn.com/images/7/6/6/img_como_dibujar_un_perro_adorable_38667_600.jpg"));
+		dao.create(new Perro("koki",
+				"http://practicarte.com/blog/wp-content/uploads/2019/04/Aprende-C%C3%B3mo-Dibujar-Un-Perro-Comiendo-Paso-A-Paso-6.jpg"));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}//init
 
 	@Override
 	public void destroy() {
 		LOG.trace("Se ejecuta solo una vez, cuando se para el servidor de aplicaciones.");
 		super.destroy();
-		perros = null;
 	}
 
 	@Override
@@ -67,7 +76,7 @@ public class PerrosController extends HttpServlet {
 		// ....
 
 		request.setAttribute("mensaje", mensaje);
-		request.setAttribute("perros", perros);
+		request.setAttribute("perros", dao.getAll());
 		request.getRequestDispatcher("perros.jsp").forward(request, response);
 	}
 
@@ -88,32 +97,32 @@ public class PerrosController extends HttpServlet {
 		LOG.debug("id= " + id + " adoptar=" + adoptar + " editar=" + editar);
 
 		if (id > 0) {
-
-			// buscar perro en array
-			Perro perro = null;
-			for (Perro p : perros) {
-				if (p.getId() == id) {
-					perro = p;
-					break;
-				}
-			}
+			// borrar
+			Perro perro = dao.getById(id);
 
 			if (adoptar) {
-				perros.remove(perro);
-				mensaje = "Perro adoptado, enhorabuena!!";
+				try {
+					dao.delete(id);
+					mensaje = "Perro adoptado, enhorabuena!!";
+				} catch (Exception e) {
+
+					mensaje ="o se a podido adoptar!";
+				}
+				
 			}
 
 			if (editar) {
-				request.setAttribute("perroEditar", perro);
+				
+				try {
+					dao.update(id, perro);
+				} catch (Exception e) {
+
+					mensaje = "no se a podido modificar";
+				}
+				request.getRequestDispatcher("perros.jsp").forward(request, response);
 			}
-
-		} else {
-			LOG.trace("solo listar perros");
-			request.setAttribute("perros", perros);
-			request.setAttribute("mensaje", mensaje);
-			request.getRequestDispatcher("perros.jsp").forward(request, response);
-
 		}
+
 	}
 
 	/**
@@ -129,41 +138,41 @@ public class PerrosController extends HttpServlet {
 		int id = Integer.parseInt(request.getParameter("id"));
 		String nombre = request.getParameter("nombre");
 		String foto = request.getParameter("foto");
-
+		//TODO validar parametros
 		if (id > 0) {
 
 			LOG.trace("Modificar el perro");
-			Perro perro = null;
-			for (Perro p : perros) {
-				if (p.getId() == id) {
-					perro = p;
-					break;
-				}
-			}
+			Perro perro = new Perro();			
 			perro.setNombre(nombre);
 			perro.setFoto(foto);
-
-			mensaje = "Los datos del perro han sido modificados.";
-
+			
+			try {
+				dao.update(id, perro);
+				mensaje = "Perro modificado con exito";
+			} catch (Exception e) {
+				mensaje = "No se puede modificar";
+			}			
+			
+			// TODO arreglar error al modificar
 		} else {
-
+			
 			LOG.trace("Crear perro nuevo");
-
-			// crear perro
-			Perro p = new Perro();
+			
+			//crear perro
+			Perro p = new Perro();		
 			p.setNombre(nombre);
 			p.setFoto(foto);
-			p.setId(indice);
-			indice++;
-
-			mensaje = "Gracias por dar de alta un nuevo perro";
-
-			// guardar en lista
-			perros.add(p);
-
+			try {
+				dao.create(p);
+				mensaje = "Gracias por dar de alta un nuevo perro";
+				
+			} catch (Exception e) {
+				mensaje = "No se puede crear";
+			}	
+			
 		}
 		// listar perros
-		request.setAttribute("perros", perros);
+		request.setAttribute("perros", dao.getAll());
 		request.setAttribute("mensaje", mensaje);
 		request.getRequestDispatcher("perros.jsp").forward(request, response);
 

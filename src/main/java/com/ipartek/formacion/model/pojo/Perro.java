@@ -1,6 +1,7 @@
 package com.ipartek.formacion.model.pojo;
 
 public class Perro {
+	
 	private int id;
 	private String nombre;
 	private String foto;
@@ -19,6 +20,24 @@ public class Perro {
 		this.nombre = nombre;
 		this.foto = foto;
 	}
+	
+	public Perro(int id,String nombre) {
+		this();
+		this.id = id;
+		this.nombre = nombre;
+		this.foto = "";
+	}
+	
+	public Perro(String nombre,String foto) {
+		this();
+		this.nombre = nombre;
+		this.foto = foto;
+	}
+	public Perro(String nombre) {
+		this();
+		this.nombre = nombre;
+	}
+
 
 	public int getId() {
 		return id;
